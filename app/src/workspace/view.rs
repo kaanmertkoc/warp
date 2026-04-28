@@ -12303,14 +12303,8 @@ impl Workspace {
     }
 
     fn open_require_login_modal(&mut self, variant: AuthViewVariant, ctx: &mut ViewContext<Self>) {
-        self.require_login_modal.update(ctx, |modal, ctx| {
-            modal.set_variant(ctx, variant);
-        });
-
-        self.close_all_overlays(ctx);
-        self.current_workspace_state.is_require_login_modal_open = true;
-        ctx.focus(&self.require_login_modal);
-        ctx.notify();
+        // Karp: Do not show require login modal
+        return;
     }
 
     fn open_auth_override_warning_modal(
@@ -17654,98 +17648,8 @@ impl Workspace {
     }
 
     fn render_avatar_button(&self, appearance: &Appearance, ctx: &AppContext) -> Box<dyn Element> {
-        let is_anonymous = self.auth_state.is_anonymous_or_logged_out();
-        let display_name = self
-            .auth_state
-            .username_for_display()
-            .unwrap_or(DEFAULT_USER_DISPLAY_NAME.to_owned());
-
-        let avatar_content = if self.auth_state.is_anonymous_or_logged_out() {
-            AvatarContent::Icon(icons::Icon::Gear)
-        } else {
-            self.auth_state
-                .user_photo_url()
-                .map(|url| AvatarContent::Image {
-                    url,
-                    display_name: display_name.clone(),
-                })
-                .unwrap_or(AvatarContent::DisplayName(display_name.clone()))
-        };
-
-        let mut avatar = Avatar::new(
-            avatar_content,
-            UiComponentStyles {
-                width: Some(20.),
-                height: Some(20.),
-                border_radius: Some(CornerRadius::with_all(Radius::Percentage(50.))),
-                font_family_id: Some(appearance.ui_font_family()),
-                font_weight: Some(Weight::Bold),
-                background: Some(appearance.theme().accent().into()),
-                font_size: Some(12.),
-                font_color: Some(ColorU::black()),
-                ..Default::default()
-            },
-        );
-
-        // Render the subtle autoupdate UI if autoupdate is ready and there is no incoming prominent update version.
-        let autoupdate_stage = autoupdate::get_update_state(ctx);
-        if FeatureFlag::AutoupdateUIRevamp.is_enabled()
-            && autoupdate_stage.ready_for_update()
-            && autoupdate_stage
-                .available_new_version()
-                .map(|version| {
-                    !is_incoming_version_past_current(version.last_prominent_update.as_deref())
-                })
-                .unwrap_or(false)
-        {
-            avatar = avatar.with_status_element(
-                StatusElementTypes::Circle,
-                RedNotificationDot::default_styles(appearance),
-            );
-        }
-
-        let button = Hoverable::new(self.mouse_states.avatar_icon.clone(), |state| {
-            let mut stack = Stack::new();
-            let mut container = Container::new(avatar.build().finish())
-                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-                .with_uniform_padding(2.);
-
-            if state.is_mouse_over_element() {
-                if !state.is_clicked() {
-                    container = container.with_background(appearance.theme().surface_2());
-                }
-                // On hover, show tooltip of user's display name (if it exists)
-                if !self.is_user_menu_open && !is_anonymous {
-                    stack.add_positioned_overlay_child(
-                        appearance
-                            .ui_builder()
-                            .tool_tip(display_name.clone())
-                            .with_style(UiComponentStyles {
-                                background: Some(appearance.theme().tooltip_background().into()),
-                                font_color: Some(appearance.theme().background().into_solid()),
-                                ..Default::default()
-                            })
-                            .build()
-                            .finish(),
-                        OffsetPositioning::offset_from_parent(
-                            vec2f(0., 4.),
-                            ParentOffsetBounds::WindowByPosition,
-                            ParentAnchor::BottomMiddle,
-                            ChildAnchor::TopMiddle,
-                        ),
-                    );
-                }
-            }
-            stack.add_child(container.finish());
-            stack.finish()
-        })
-        .on_click(move |ctx, _, _| {
-            ctx.dispatch_typed_action(WorkspaceAction::ToggleUserMenu);
-        })
-        .with_cursor(Cursor::PointingHand)
-        .finish();
-
-        SavePosition::new(Align::new(button).finish(), USER_AVATAR_BUTTON_POSITION_ID).finish()
+        // Karp hides the user avatar button completely
+        Stack::new().finish()
     }
 
     fn render_resource_center_button(
