@@ -21255,12 +21255,6 @@ impl TerminalView {
             )
         };
 
-        // On Local and Dev channels, append an indicator when NLD was overridden.
-        // Skip the honor_ps1 case since there's no good place to display the extra text.
-        if !block.honor_ps1() && block.nld_overridden() && ChannelState::enable_debug_features() {
-            prompt.push_str(" (nld overridden)");
-        }
-
         prompt
     }
 
