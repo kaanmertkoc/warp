@@ -629,3 +629,41 @@ pub(super) fn received_referral_reward() -> WarpTheme {
         Some("Received Referral Reward".to_string()),
     )
 }
+
+const DELTARUNE_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x050520FF),
+    AnsiColor::from_u32(0xDC1510FF),
+    AnsiColor::from_u32(0x33A56CFF),
+    AnsiColor::from_u32(0xFBCE3CFF),
+    AnsiColor::from_u32(0x6A7BC4FF),
+    AnsiColor::from_u32(0xA017D0FF),
+    AnsiColor::from_u32(0x77E0FFFF),
+    AnsiColor::from_u32(0xFFFFFFFF),
+);
+const DELTARUNE_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x8888AAFF),
+    AnsiColor::from_u32(0xEB0095FF),
+    AnsiColor::from_u32(0x40E4D4FF),
+    AnsiColor::from_u32(0xF4A731FF),
+    AnsiColor::from_u32(0x75FBEDFF),
+    AnsiColor::from_u32(0xF983D8FF),
+    AnsiColor::from_u32(0xBBFFFCFF),
+    AnsiColor::from_u32(0xC7E3F2FF),
+);
+
+pub(super) fn deltarune_colors() -> TerminalColors {
+    TerminalColors::new(DELTARUNE_NORMAL_COLORS, DELTARUNE_BRIGHT_COLORS)
+}
+
+pub(super) fn deltarune() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x0B0B3BFF)),
+        ColorU::from_u32(0xFFFFFFFF),
+        Fill::Solid(ColorU::from_u32(0xEB0095FF)),
+        None,
+        Some(Details::Darker),
+        deltarune_colors(),
+        None,
+        Some("Deltarune".to_string()),
+    )
+}
