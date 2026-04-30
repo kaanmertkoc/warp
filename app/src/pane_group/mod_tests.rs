@@ -161,6 +161,7 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| GitHubAuthNotifier::new());
     app.add_singleton_model(AgentConversationsModel::new);
     app.add_singleton_model(remote_server::manager::RemoteServerManager::new);
+    app.add_singleton_model(|ctx| crate::changelog_model::ChangelogModel::new(ServerApiProvider::as_ref(ctx).get()));
 }
 
 struct MockOptions {
@@ -1084,7 +1085,7 @@ fn test_navigation_skips_hidden_closed_panes() {
     });
 }
 
-// Ensures that we always show the pane header for terminal panes, regardless of split state.
+// Ensures terminal pane headers are hidden by default, including when panes are split.
 #[test]
 fn test_terminal_pane_headers() {
     App::test((), |mut app| async move {
@@ -1099,12 +1100,12 @@ fn test_terminal_pane_headers() {
             assert_eq!(terminal_panes.len(), 1);
 
             let pane_view = terminal_panes[0].pane_view();
-            let header_visible = pane_view
+            let should_render_header = pane_view
                 .as_ref(ctx)
-                .header()
+                .child(ctx)
                 .as_ref(ctx)
-                .is_visible_in_pane_group();
-            assert!(header_visible);
+                .should_render_header(ctx);
+            assert!(!should_render_header);
         });
 
         // Create a terminal split pane.
@@ -1112,7 +1113,7 @@ fn test_terminal_pane_headers() {
             pane_group.add_terminal_pane(Direction::Left, None, ctx);
         });
 
-        // There should be two terminal panes and they should both have the pane header.
+        // There should be two terminal panes and they should both keep the shared pane-header hidden.
         pane_group.read(&app, |pane_group, ctx| {
             assert_eq!(pane_group.pane_contents.len(), 2);
 
@@ -1121,15 +1122,17 @@ fn test_terminal_pane_headers() {
 
             for terminal_pane in terminal_panes {
                 let pane_view = terminal_pane.pane_view();
-                assert!(pane_view
+                assert!(
+                    !pane_view
                     .as_ref(ctx)
-                    .header()
+                    .child(ctx)
                     .as_ref(ctx)
-                    .is_visible_in_pane_group());
+                    .should_render_header(ctx)
+                );
             }
         });
 
-        // Close one of the panes; the remaining pane should still have a header.
+        // Close one of the panes; the remaining pane should still keep its header hidden.
         pane_group.update(&mut app, |pane_group, ctx| {
             pane_group.close_pane(pane_group.focused_pane_id(ctx), ctx);
         });
@@ -1141,14 +1144,16 @@ fn test_terminal_pane_headers() {
             assert_eq!(terminal_panes.len(), 1);
 
             let pane_view = terminal_panes[0].pane_view();
-            assert!(pane_view
+            assert!(
+                !pane_view
                 .as_ref(ctx)
-                .header()
+                .child(ctx)
                 .as_ref(ctx)
-                .is_visible_in_pane_group());
+                .should_render_header(ctx)
+            );
         });
 
-        // Create a non-terminal split pane. Terminal pane header remains visible.
+        // Create a non-terminal split pane. Terminal pane header stays hidden.
         pane_group.update(&mut app, |pane_group, ctx| {
             pane_group.add_pane_with_direction(
                 Direction::Left,
@@ -1165,11 +1170,93 @@ fn test_terminal_pane_headers() {
             assert_eq!(terminal_panes.len(), 1);
 
             let pane_view = terminal_panes[0].pane_view();
-            assert!(pane_view
+            assert!(
+                !pane_view
                 .as_ref(ctx)
-                .header()
+                .child(ctx)
                 .as_ref(ctx)
-                .is_visible_in_pane_group());
+                .should_render_header(ctx)
+            );
+        });
+    });
+}
+
+// Ensures header rendering still works in terminal exception cases.
+#[test]
+fn test_terminal_pane_headers_exceptions() {
+    let _guard = FeatureFlag::AgentView.override_enabled(true);
+
+    App::test((), |mut app| async move {
+        initialize_app(&mut app);
+        let pane_group = mock_pane_group(&mut app, Default::default());
+
+        // Shared sessions should force the terminal header to render.
+        pane_group.update(&mut app, |pane_group, ctx| {
+            let terminal_model = pane_group
+                .terminal_session_by_pane_index(0)
+                .unwrap()
+                .terminal_manager(ctx)
+                .as_ref(ctx)
+                .model();
+            terminal_model
+                .lock()
+                .set_shared_session_status(SharedSessionStatus::ActiveSharer);
+        });
+
+        pane_group.read(&app, |pane_group, ctx| {
+            let terminal_view = pane_group
+                .terminal_view_at_pane_index(0, ctx)
+                .expect("terminal pane exists");
+            assert!(terminal_view.as_ref(ctx).should_render_header(ctx));
+        });
+
+        // Back to default terminal mode should hide the header again.
+        pane_group.update(&mut app, |pane_group, ctx| {
+            let terminal_model = pane_group
+                .terminal_session_by_pane_index(0)
+                .unwrap()
+                .terminal_manager(ctx)
+                .as_ref(ctx)
+                .model();
+            terminal_model
+                .lock()
+                .set_shared_session_status(SharedSessionStatus::NotShared);
+        });
+
+        pane_group.read(&app, |pane_group, ctx| {
+            let terminal_view = pane_group
+                .terminal_view_at_pane_index(0, ctx)
+                .expect("terminal pane exists");
+            assert!(!terminal_view.as_ref(ctx).should_render_header(ctx));
+        });
+
+        // Fullscreen agent view should also force the terminal header to render.
+        pane_group.update(&mut app, |pane_group, ctx| {
+            let terminal_view = pane_group
+                .terminal_view_at_pane_index(0, ctx)
+                .expect("terminal pane exists");
+            terminal_view.update(ctx, |terminal_view, ctx| {
+                terminal_view
+                    .agent_view_controller()
+                    .update(ctx, |controller, ctx| {
+                        controller
+                            .try_enter_agent_view(
+                                None,
+                                crate::ai::blocklist::agent_view::AgentViewEntryOrigin::Input {
+                                    was_prompt_autodetected: false,
+                                },
+                                ctx,
+                            )
+                            .expect("should be able to enter agent view in test setup");
+                    });
+            });
+        });
+
+        pane_group.read(&app, |pane_group, ctx| {
+            let terminal_view = pane_group
+                .terminal_view_at_pane_index(0, ctx)
+                .expect("terminal pane exists");
+            assert!(terminal_view.as_ref(ctx).should_render_header(ctx));
         });
     });
 }
