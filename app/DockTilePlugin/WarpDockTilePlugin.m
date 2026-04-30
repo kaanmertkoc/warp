@@ -1,6 +1,6 @@
 #include "WarpDockTilePlugin.h"
 
-@implementation WarpDockTilePlugIn {
+@implementation WarpDockTilePlugin {
     NSFileHandle *_logFileHandle;
 }
 
@@ -106,6 +106,7 @@
         @"classic3": @"classic_3",
         @"comets": @"comets",
         @"glasssky": @"glass_sky",
+        @"glass_sky": @"glass_sky",
         @"glitch": @"glitch",
         @"glow": @"glow",
         @"holographic": @"holographic",
@@ -144,7 +145,7 @@
         [self logMessage:[NSString stringWithFormat:@"setDockTile called with tile: %@", dockTile ? @"valid" : @"nil"]];
         if (dockTile) {
             // Get the bundle ID for setting up user defaults observation
-            NSBundle *pluginBundle = [NSBundle bundleForClass:[WarpDockTilePlugIn class]];    
+            NSBundle *pluginBundle = [NSBundle bundleForClass:[WarpDockTilePlugin class]];    
             NSString *path = [[pluginBundle bundlePath] stringByAppendingPathComponent:@"Contents/Info.plist"];
             NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];    
             NSString *bundleId = dict[@"MainAppBundleIdentifier"];
