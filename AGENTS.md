@@ -18,3 +18,6 @@ To maintain this repository as an offline-first terminal, the following surgical
 ## Maintenance Strategy & Warnings
 - **Refusing Upstream Merges:** Because the core feature flags and AI logic are deeply woven into the codebase, attempting to literally delete the `ai` or `cloud` folders will break compilation. The documented approach above "lobotomizes" the features via UI omission rather than code deletion.
 - **OS Compatibility Ticking Clock:** Because Karp relies on a highly customized, low-level Metal rendering pipeline, major macOS updates (e.g., to macOS window compositing or graphics APIs) could introduce visual artifacting or crashes. If you choose *never* to pull upstream fixes from Warp, you will be solely responsible for debugging and fixing complex GPU rendering issues.
+
+## Branch Policy for This Project
+- Use `Karp` as the working and canonical branch for this project. I will not create or switch branches unless explicitly requested.
