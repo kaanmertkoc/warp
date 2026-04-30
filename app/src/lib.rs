@@ -251,7 +251,7 @@ use crate::workspaces::user_profiles::UserProfiles;
 use anyhow::Context;
 use anyhow::{anyhow, Result};
 use appearance::{Appearance, AppearanceManager};
-use channel::ChannelState;
+use channel::{Channel, ChannelState};
 use interval_timer::IntervalTimer;
 use itertools::Itertools;
 use referral_theme_status::ReferralThemeStatus;
@@ -1254,6 +1254,8 @@ fn initialize_app(
         ChannelState::app_version()
     );
 
+    let is_oss_offline_mode = matches!(ChannelState::channel(), Channel::Oss);
+
     // Teach our app that sometimes option means meta.
     ctx.set_event_munger(move |event, ctx| {
         let extra_meta_keys = *KeysSettings::as_ref(ctx).extra_meta_keys;
@@ -1287,7 +1289,7 @@ fn initialize_app(
         // Skip refresh_user for CLI mode — the CLI handles auth refresh in
         // ensure_auth_state so it can detect invalid credentials before running
         // a command.
-        if !matches!(launch_mode, LaunchMode::CommandLine { .. }) {
+        if !is_oss_offline_mode && !matches!(launch_mode, LaunchMode::CommandLine { .. }) {
             AuthManager::handle(ctx).update(ctx, |auth_manager, ctx| {
                 auth_manager.refresh_user(ctx);
             });
@@ -1407,12 +1409,14 @@ fn initialize_app(
     ctx.add_singleton_model(CustomSecretRegexUpdater::new);
 
     // Register the `TelemetryCollection` singleton model.
-    let server_api_clone = server_api.clone();
-    ctx.add_singleton_model(|ctx| {
-        let telemetry_collector = TelemetryCollector::new(server_api_clone);
-        telemetry_collector.initialize_telemetry_collection(ctx);
-        telemetry_collector
-    });
+    if !is_oss_offline_mode {
+        let server_api_clone = server_api.clone();
+        ctx.add_singleton_model(|ctx| {
+            let telemetry_collector = TelemetryCollector::new(server_api_clone);
+            telemetry_collector.initialize_telemetry_collection(ctx);
+            telemetry_collector
+        });
+    }
     timer.mark_interval_end("INITIALIZE_TELEMETRY_COLLECTION");
 
     // Register initial keybindings prior to creating menus
@@ -1692,7 +1696,9 @@ fn initialize_app(
         ctx.add_singleton_model(ScheduledAgentManager::new);
     }
 
-    AutoupdateState::register(ctx, server_api.clone());
+    if !is_oss_offline_mode {
+        AutoupdateState::register(ctx, server_api.clone());
+    }
 
     ctx.add_singleton_model(LocalWorkflows::new);
 
@@ -1861,9 +1867,11 @@ fn app_callbacks(is_integration_test: bool) -> warpui::platform::AppCallbacks {
                 auth_state.user_id().map(|uid| uid.as_string()),
                 auth_state.anonymous_id(),
             );
-            TelemetryCollector::handle(ctx).update(ctx, |telemetry_collector, ctx| {
-                telemetry_collector.flush_telemetry_events_for_shutdown(ctx);
-            });
+            if !matches!(ChannelState::channel(), Channel::Oss) {
+                TelemetryCollector::handle(ctx).update(ctx, |telemetry_collector, ctx| {
+                    telemetry_collector.flush_telemetry_events_for_shutdown(ctx);
+                });
+            }
 
             // Shutdown all LSP servers gracefully before app termination
             lsp::LspManagerModel::handle(ctx).update(ctx, |manager, ctx| {

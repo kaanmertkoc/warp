@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$REPO_ROOT"
+
+DEST_APP="/Applications/Karp.app"
+
+echo "Building Karp (warp-oss) release app bundle..."
+WARP_BIN_NAME="warp-oss" WARP_CHANNEL="oss" FEATURES="gui" ./script/macos/run --release --dont-open
+
+SOURCE_APP=""
+if [[ -d "$REPO_ROOT/target/release/bundle/osx/Karp.app" ]]; then
+  SOURCE_APP="$REPO_ROOT/target/release/bundle/osx/Karp.app"
+elif [[ -d "$REPO_ROOT/target/release/bundle/osx/WarpOss.app" ]]; then
+  SOURCE_APP="$REPO_ROOT/target/release/bundle/osx/WarpOss.app"
+else
+  echo "Could not find built app bundle in target/release/bundle/osx" >&2
+  exit 1
+fi
+
+echo "Installing app to $DEST_APP"
+if [[ -w "/Applications" ]]; then
+  rm -rf "$DEST_APP"
+  ditto "$SOURCE_APP" "$DEST_APP"
+else
+  sudo rm -rf "$DEST_APP"
+  sudo ditto "$SOURCE_APP" "$DEST_APP"
+fi
+
+echo "Installed: $DEST_APP"
