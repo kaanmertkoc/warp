@@ -21214,7 +21214,7 @@ impl TerminalView {
             Some(block) => block,
         };
 
-        let mut prompt = if block.honor_ps1() {
+        let prompt = if block.honor_ps1() {
             block.prompt_contents_to_string(false)
         } else if block.prompt_snapshot().is_some() {
             // Note that we're checking not only for the flag being enabled but also ensuring the

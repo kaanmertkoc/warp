@@ -1696,9 +1696,7 @@ fn initialize_app(
         ctx.add_singleton_model(ScheduledAgentManager::new);
     }
 
-    if !is_oss_offline_mode {
-        AutoupdateState::register(ctx, server_api.clone());
-    }
+    AutoupdateState::register(ctx, server_api.clone());
 
     ctx.add_singleton_model(LocalWorkflows::new);
 

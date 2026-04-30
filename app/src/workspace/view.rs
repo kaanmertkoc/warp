@@ -90,7 +90,6 @@ use crate::terminal::view::{
     AgentOnboardingVersion, ConversationRestorationInNewPaneType, OnboardingIntention,
     OnboardingVersion,
 };
-use crate::ui_components::red_notification_dot::RedNotificationDot;
 #[cfg(feature = "local_fs")]
 use crate::util::file::external_editor::settings::OpenConversationPreference;
 use crate::workspace::bonus_grant_notification_model::BonusGrantNotificationEvent;
@@ -186,7 +185,6 @@ use crate::terminal::available_shells::AvailableShells;
 use crate::terminal::block_list_viewport::InputMode;
 use crate::terminal::ligature_settings::should_use_ligature_rendering;
 use crate::terminal::warpify::settings::WarpifySettings;
-use crate::ui_components::avatar::{Avatar, AvatarContent, StatusElementTypes};
 
 #[cfg(target_family = "wasm")]
 use crate::ai::agent_conversations_model::AgentConversationsModelEvent;
@@ -12302,7 +12300,11 @@ impl Workspace {
         }
     }
 
-    fn open_require_login_modal(&mut self, variant: AuthViewVariant, ctx: &mut ViewContext<Self>) {
+    fn open_require_login_modal(
+        &mut self,
+        _variant: AuthViewVariant,
+        _ctx: &mut ViewContext<Self>,
+    ) {
         // Karp: Do not show require login modal
         return;
     }
@@ -17647,7 +17649,11 @@ impl Workspace {
         .finish()
     }
 
-    fn render_avatar_button(&self, appearance: &Appearance, ctx: &AppContext) -> Box<dyn Element> {
+    fn render_avatar_button(
+        &self,
+        _appearance: &Appearance,
+        _ctx: &AppContext,
+    ) -> Box<dyn Element> {
         // Karp hides the user avatar button completely
         Stack::new().finish()
     }

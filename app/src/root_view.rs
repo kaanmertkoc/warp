@@ -2247,7 +2247,7 @@ impl RootView {
                 // If the user isn't logged in, only require login if the applied
                 // settings need an account (AI or Warp Drive enabled).
                 let ai_enabled = selected_settings.is_ai_enabled();
-                let warp_drive_enabled = selected_settings.is_warp_drive_enabled();
+                let _warp_drive_enabled = selected_settings.is_warp_drive_enabled();
                 // Karp bypasses all auth and login requirements
                 let requires_login = false;
 
