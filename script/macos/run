@@ -41,6 +41,53 @@ OPEN_WITH_LAUNCHD=false
 # an application doesn't make sense.
 WARP_ARGS=()
 
+install_dock_tile_plugin() {
+  local profile
+  local plugin_path
+  local bundle_id
+
+  if [[ -n "${PROFILE:-}" ]]; then
+    profile="$PROFILE"
+  elif [[ "$WARP_APP_PATH" == *"/release/"* ]]; then
+    profile="release"
+  else
+    profile="debug"
+  fi
+
+  plugin_path="target/$profile/WarpDockTilePlugin.docktileplugin"
+  if [[ ! -d "$plugin_path" ]]; then
+    echo "Error: dock tile plugin not found at $plugin_path"
+    return 1
+  fi
+
+  case "$WARP_CHANNEL" in
+    local)
+      bundle_id="dev.warp.Warp-Local"
+      ;;
+    dev)
+      bundle_id="dev.warp.Warp-Dev"
+      ;;
+    preview)
+      bundle_id="dev.warp.Warp-Preview"
+      ;;
+    stable)
+      bundle_id="dev.warp.Warp-Stable"
+      ;;
+    oss)
+      bundle_id="dev.warp.WarpOss"
+      ;;
+    *)
+      bundle_id="dev.warp.WarpOss"
+      ;;
+  esac
+
+  echo "Copying DockTilePlugin from $plugin_path"
+  mkdir -p "$WARP_APP_PATH/Contents/PlugIns"
+  cp -R "$plugin_path" "$WARP_APP_PATH/Contents/PlugIns/"
+  plutil -replace NSDockTilePlugIn -string "WarpDockTilePlugin.docktileplugin" "$WARP_APP_PATH/Contents/Info.plist"
+  plutil -replace MainAppBundleIdentifier -string "$bundle_id" "$WARP_APP_PATH/Contents/PlugIns/WarpDockTilePlugin.docktileplugin/Contents/Info.plist"
+}
+
 # Export this variable so it can be referenced by app/build.rs later when
 # running `cargo bundle`.
 export FRAMEWORK_OVERRIDE="dev"
@@ -125,6 +172,8 @@ if [[ ",$FEATURES," =~ ",heap_usage_tracking," ]]; then
   HELPERS_DIR="$WARP_APP_PATH/Contents/Helpers"
   "${REPO_ROOT}/script/prepare_bundled_pprof" "$HELPERS_DIR"
 fi
+
+install_dock_tile_plugin
 
 echo "Codesigning app..."
 SIGNING_CERT="$(security find-identity -p codesigning -v | grep "Apple Development" | awk '{print $2}' | head -1)"

@@ -26,8 +26,7 @@ use warp_core::{
     rename_all = "snake_case"
 )]
 pub enum AppIcon {
-    /// Current default: White glyph on blue/black gradient blackground, set in Dec 2024.
-    #[default]
+    /// Bundle-default icon behavior (respects macOS Icon & Widget style).
     #[schemars(description = "Default")]
     Default,
     #[schemars(description = "Aurora")]
@@ -43,6 +42,8 @@ pub enum AppIcon {
     /// Cow icon, for Code on Warp launch.
     #[schemars(description = "Cow")]
     Cow,
+    /// New Karp default icon.
+    #[default]
     #[schemars(description = "Glass Sky")]
     GlassSky,
     #[schemars(description = "Glitch")]
@@ -125,7 +126,7 @@ impl AppIconSettings {
 define_settings_group!(AppIconSettings, settings: [
     app_icon: AppIconState {
         type: AppIcon,
-        default: AppIcon::Default,
+        default: AppIcon::GlassSky,
         supported_platforms: SupportedPlatforms::MAC,
         sync_to_cloud: SyncToCloud::Never,
         private: false,
