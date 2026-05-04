@@ -1074,6 +1074,11 @@ impl UseAgentToolbar {
             AgentInputFooterEvent::ToggleFileExplorer(agent) => {
                 ctx.emit(UseAgentToolbarEvent::ToggleFileExplorer(*agent));
             }
+            AgentInputFooterEvent::OpenCodeReview => {
+                if let Some(agent) = self.cli_agent(ctx) {
+                    ctx.emit(UseAgentToolbarEvent::ToggleCodeReviewPane(agent));
+                }
+            }
             AgentInputFooterEvent::StartRemoteControl => {
                 let scrollback_type = if self.cli_agent(ctx).is_some() {
                     SharedSessionScrollbackType::None
