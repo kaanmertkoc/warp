@@ -3585,14 +3585,20 @@ impl CodeReviewView {
             LocalCodeEditorEvent::ViewportUpdated => {}
             LocalCodeEditorEvent::LayoutInvalidated => {
                 if let CodeReviewViewState::Loaded(state) = self.state() {
-                    if let Some(index) = state
+                    if let Some((index, file_entry)) = state
                         .file_states
                         .iter()
-                        .position(|f| f.1.file_diff.file_path == *diff_file_path)
+                        .enumerate()
+                        .find(|(_, f)| f.1.file_diff.file_path == *diff_file_path)
                     {
-                        self.viewported_list_state
-                            .invalidate_height_for_index(index);
-                        ctx.notify();
+                        let file_state = file_entry.1;
+                        // Collapsed rows have fixed header-only height, so editor layout
+                        // changes inside them do not affect list item height.
+                        if file_state.is_expanded {
+                            self.viewported_list_state
+                                .invalidate_height_for_index(index);
+                            ctx.notify();
+                        }
                     }
                 }
             }

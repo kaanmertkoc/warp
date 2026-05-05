@@ -7911,10 +7911,6 @@ impl Workspace {
         context: Option<&CodeReviewPaneContext>,
         ctx: &mut ViewContext<Self>,
     ) {
-        if !*TabSettings::as_ref(ctx).show_code_review_button {
-            return;
-        }
-
         // If context is provided, use it directly. Otherwise, derive from active pane group.
         let context_data: Option<(
             Option<PathBuf>,

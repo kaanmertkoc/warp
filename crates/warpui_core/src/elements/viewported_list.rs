@@ -686,6 +686,19 @@ impl<T> ListStateInner<T> {
     }
 
     fn invalidate_height_for_index(&mut self, index: usize) {
+        // If this item is already invalidated, avoid rebuilding the suffix tree again.
+        // Repeated invalidations for the same index can happen during layout-heavy
+        // interactions (for example, editor layout updates) and this path is O(n)
+        // in the size of the remaining list.
+        let already_invalidated = {
+            let mut cursor = self.content.cursor::<Count, ()>();
+            cursor.seek(&Count(index), sum_tree::SeekBias::Right);
+            matches!(cursor.item(), Some(ListItem { height: None }))
+        };
+        if already_invalidated {
+            return;
+        }
+
         let (new_tree, last_measured) = {
             let mut cursor = self.content.cursor::<Count, ()>();
             let mut new_items = cursor.slice(&Count(index), sum_tree::SeekBias::Right);
