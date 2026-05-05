@@ -19,7 +19,8 @@ use crate::{
 
 #[cfg(feature = "local_fs")]
 use crate::code_review::context::{
-    create_attachment_reference_and_key, register_diffset_attachment,
+    create_attachment_reference_and_key, format_file_diffs_as_unified_diff,
+    register_diffset_attachment,
 };
 use crate::{
     ai::agent::CurrentHead,
@@ -385,6 +386,7 @@ pub enum CodeReviewAction {
     ToggleStashChanges,
     ToggleFileSelection(PathBuf),
     AddDiffSetAsContext(DiffSetScope),
+    CopyDiffSetToClipboard(DiffSetScope),
     CopyFilePath(PathBuf),
     OpenCommentComposerFromHeader,
     ShowFindBar,
@@ -6195,6 +6197,11 @@ impl CodeReviewView {
                 return;
             }
 
+            if !AISettings::as_ref(ctx).is_any_ai_enabled(ctx) {
+                self.copy_diff_set_to_clipboard(scope, ctx);
+                return;
+            }
+
             let is_input_box_visible = terminal_view.read(ctx, |terminal_view, _| {
                 terminal_view.is_input_box_visible(&terminal_view.model.lock(), ctx)
             });
@@ -6306,6 +6313,60 @@ impl CodeReviewView {
     #[cfg(not(feature = "local_fs"))]
     fn insert_diff_as_context(&mut self, _scope: DiffSetScope, _ctx: &mut ViewContext<Self>) {
         log::error!("insert_diff_as_context is not supported without the local_fs feature");
+    }
+
+    #[cfg(feature = "local_fs")]
+    fn copy_diff_set_to_clipboard(&mut self, scope: DiffSetScope, ctx: &mut ViewContext<Self>) {
+        let diff_text = if let CodeReviewViewState::Loaded(state) = self.state() {
+            let files_to_process = match &scope {
+                DiffSetScope::All => state
+                    .file_states
+                    .values()
+                    .map(|fs| &fs.file_diff)
+                    .collect_vec(),
+                DiffSetScope::File(target_path) => state
+                    .file_states
+                    .get(target_path)
+                    .into_iter()
+                    .map(|fs| &fs.file_diff)
+                    .collect_vec(),
+            };
+
+            format_file_diffs_as_unified_diff(files_to_process.into_iter())
+        } else {
+            String::new()
+        };
+
+        if diff_text.is_empty() {
+            ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+                toast_stack.add_ephemeral_toast(
+                    DismissibleToast::default("No diff to copy".to_string()),
+                    self.window_id,
+                    ctx,
+                );
+            });
+            return;
+        }
+
+        ctx.clipboard()
+            .write(ClipboardContent::plain_text(diff_text));
+
+        let message = match scope {
+            DiffSetScope::All => "Copied diff set to clipboard",
+            DiffSetScope::File(_) => "Copied file diff to clipboard",
+        };
+        ToastStack::handle(ctx).update(ctx, |toast_stack, ctx| {
+            toast_stack.add_ephemeral_toast(
+                DismissibleToast::success(message.to_string()),
+                self.window_id,
+                ctx,
+            );
+        });
+    }
+
+    #[cfg(not(feature = "local_fs"))]
+    fn copy_diff_set_to_clipboard(&mut self, _scope: DiffSetScope, _ctx: &mut ViewContext<Self>) {
+        log::error!("copy_diff_set_to_clipboard is not supported without the local_fs feature");
     }
 
     fn get_current_head(&self, ctx: &ViewContext<Self>) -> Option<CurrentHead> {
@@ -6988,10 +7049,6 @@ impl CodeReviewView {
     ) -> Vec<MenuItem<CodeReviewAction>> {
         let mut items = Vec::new();
 
-        if !FeatureFlag::FileAndDiffSetComments.is_enabled() {
-            return items;
-        }
-
         let mut has_changes = false;
         if let CodeReviewViewState::Loaded(loaded) = self.state() {
             has_changes = !loaded.to_diff_stats().has_no_changes();
@@ -7004,6 +7061,21 @@ impl CodeReviewView {
                     .with_on_select_action(CodeReviewAction::AddDiffSetAsContext(DiffSetScope::All))
                     .into_item(),
             );
+        }
+
+        if has_changes {
+            items.push(
+                MenuItemFields::new("Copy diff set to clipboard")
+                    .with_icon(Icon::Copy)
+                    .with_on_select_action(CodeReviewAction::CopyDiffSetToClipboard(
+                        DiffSetScope::All,
+                    ))
+                    .into_item(),
+            );
+        }
+
+        if !FeatureFlag::FileAndDiffSetComments.is_enabled() {
+            return items;
         }
 
         let (comment_label, comment_icon) = if self.get_existing_diffset_comment(ctx).is_some() {
@@ -7037,6 +7109,17 @@ impl CodeReviewView {
                 MenuItemFields::new("Add diff set as context")
                     .with_icon(Icon::Paperclip)
                     .with_on_select_action(CodeReviewAction::AddDiffSetAsContext(DiffSetScope::All))
+                    .into_item(),
+            );
+        }
+
+        if has_changes {
+            items.push(
+                MenuItemFields::new("Copy diff set to clipboard")
+                    .with_icon(Icon::Copy)
+                    .with_on_select_action(CodeReviewAction::CopyDiffSetToClipboard(
+                        DiffSetScope::All,
+                    ))
                     .into_item(),
             );
         }
@@ -7637,6 +7720,9 @@ impl TypedActionView for CodeReviewView {
             }
             CodeReviewAction::AddDiffSetAsContext(scope) => {
                 self.insert_diff_as_context(scope.clone(), ctx);
+            }
+            CodeReviewAction::CopyDiffSetToClipboard(scope) => {
+                self.copy_diff_set_to_clipboard(scope.clone(), ctx);
             }
             CodeReviewAction::CopyFilePath(path) => {
                 if let Some(repo_path) = self.repo_path() {
