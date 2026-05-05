@@ -8013,6 +8013,27 @@ impl Workspace {
         }
     }
 
+    fn toggle_code_review_panel_from_arg(
+        &mut self,
+        panel_context: &CodeReviewPanelArg,
+        pane_group: ViewHandle<PaneGroup>,
+        ctx: &mut ViewContext<Self>,
+    ) {
+        let panel_already_showing_repo = pane_group.as_ref(ctx).right_panel_open
+            && panel_context
+                .repo_path
+                .as_ref()
+                .is_some_and(|target_repo_path| {
+                    self.right_panel_view.as_ref(ctx).selected_repo_path() == Some(target_repo_path)
+                });
+
+        if panel_already_showing_repo {
+            self.close_right_panel(&pane_group, ctx);
+        } else {
+            self.open_code_review_panel_from_arg(panel_context, pane_group, ctx);
+        }
+    }
+
     fn update_right_panel_open_state(
         &mut self,
         #[cfg_attr(target_family = "wasm", allow(unused_variables))]
@@ -13187,15 +13208,7 @@ impl Workspace {
                 self.open_code_review_panel_from_arg(arg, pane_group.clone(), ctx);
             }
             pane_group::Event::ToggleCodeReviewPane(arg) => {
-                self.toggle_right_panel(&pane_group, ctx);
-                let active_conversation_id = arg.terminal_view.upgrade(ctx).and_then(|tv| {
-                    BlocklistAIHistoryModel::as_ref(ctx).active_conversation_id(tv.id())
-                });
-                if let Some(conversation_id) = active_conversation_id {
-                    BlocklistAIHistoryModel::handle(ctx).update(ctx, |history_model, _| {
-                        history_model.set_has_code_review_opened_to_true(conversation_id);
-                    });
-                }
+                self.toggle_code_review_panel_from_arg(arg, pane_group.clone(), ctx);
             }
             pane_group::Event::RunWorkflow {
                 workflow,

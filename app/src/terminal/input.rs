@@ -2256,7 +2256,14 @@ impl Input {
                     ctx.emit(Event::OpenSettings(*section));
                 }
                 AgentInputFooterEvent::OpenCodeReview => {
-                    ctx.emit(Event::OpenCodeReviewPane);
+                    // CLI-agent footers are also subscribed to by UseAgentToolbar,
+                    // which opens/toggles code review with the active agent context.
+                    if CLIAgentSessionsModel::as_ref(ctx)
+                        .session(me.terminal_view_id)
+                        .is_none()
+                    {
+                        ctx.emit(Event::OpenCodeReviewPane);
+                    }
                 }
                 AgentInputFooterEvent::OpenAIDocument {
                     document_id,
