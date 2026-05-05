@@ -516,7 +516,6 @@ use crate::terminal::{block_list_element::BlockListMenuSource, prompt};
 use crate::terminal::{color, History, SizeInfo};
 use crate::terminal::{color::List, model::block::LONG_RUNNING_BOTTOM_PADDING_LINES};
 use crate::terminal::{event::AfterBlockCompletedEvent, event::BlockLatencyData, event::BlockType};
-use crate::throttle::throttle;
 use crate::util::color::darken;
 use crate::{send_telemetry_from_ctx, send_telemetry_on_executor, send_telemetry_sync_from_ctx};
 
@@ -637,9 +636,6 @@ lazy_static! {
 pub const AI_CONTROL_PANEL_MARGIN: f32 = 10.;
 
 pub const OVERFLOW_BUTTON_OFFSET_X: f32 = -3.;
-pub const MAX_WAKEUPS_PER_SECOND: u64 = 60;
-pub const WAKEUP_THROTTLE_PERIOD: Duration =
-    Duration::from_micros(1000 * 1000 / MAX_WAKEUPS_PER_SECOND);
 
 pub const EXECUTE_PENDING_COMMAND_DELAY: Duration = Duration::from_millis(100);
 
@@ -3510,7 +3506,7 @@ impl TerminalView {
         );
 
         let _ = ctx.spawn_stream_local(
-            throttle(WAKEUP_THROTTLE_PERIOD, wakeups_rx),
+            wakeups_rx,
             Self::handle_terminal_wakeup,
             |_, _| {}, /* on_done */
         );
