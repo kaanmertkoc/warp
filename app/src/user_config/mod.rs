@@ -4,6 +4,8 @@ pub mod util;
 #[cfg_attr(target_family = "wasm", path = "wasm.rs")]
 mod imp;
 
+#[cfg(feature = "local_fs")]
+use crate::tab_configs::tab_config::copy_env_files_to_worktree_command;
 use crate::tab_configs::{TabConfig, TabConfigError};
 use crate::themes::theme::WarpThemeConfig;
 use crate::{
@@ -262,6 +264,7 @@ pub(crate) fn materialize_default_worktree_config(
     }
 
     replace_default_worktree_placeholders(&mut toml_value, repo_path, pane_type, &worktree_path);
+    ensure_worktree_env_copy_command(&mut toml_value, &worktree_path);
 
     if let Some(doc) = toml_value.as_table_mut() {
         if let Some(params) = doc.get_mut("params").and_then(toml::Value::as_table_mut) {
@@ -279,6 +282,66 @@ pub(crate) fn materialize_default_worktree_config(
         .map_err(|e| format!("failed to parse materialized worktree config: {e:?}"))?;
 
     Ok((toml_content, tab_config))
+}
+
+#[cfg(feature = "local_fs")]
+fn ensure_worktree_env_copy_command(value: &mut toml::Value, default_worktree_path: &str) {
+    match value {
+        toml::Value::Array(array) => {
+            if array.iter().any(|value| {
+                value
+                    .as_str()
+                    .is_some_and(|command| command.starts_with("git worktree add "))
+            }) {
+                insert_env_copy_command(array, default_worktree_path);
+            } else {
+                for value in array {
+                    ensure_worktree_env_copy_command(value, default_worktree_path);
+                }
+            }
+        }
+        toml::Value::Table(table) => {
+            for (_, value) in table.iter_mut() {
+                ensure_worktree_env_copy_command(value, default_worktree_path);
+            }
+        }
+        toml::Value::Boolean(_)
+        | toml::Value::Datetime(_)
+        | toml::Value::Float(_)
+        | toml::Value::Integer(_)
+        | toml::Value::String(_) => {}
+    }
+}
+
+#[cfg(feature = "local_fs")]
+fn insert_env_copy_command(commands: &mut Vec<toml::Value>, default_worktree_path: &str) {
+    let already_copies_env = commands.iter().any(|value| {
+        value
+            .as_str()
+            .is_some_and(|command| command.contains("-name '.env*'") && command.contains("cp -p"))
+    });
+    if already_copies_env {
+        return;
+    }
+
+    let Some(worktree_add_index) = commands.iter().position(|value| {
+        value
+            .as_str()
+            .is_some_and(|command| command.starts_with("git worktree add "))
+    }) else {
+        return;
+    };
+
+    let worktree_path = commands
+        .iter()
+        .skip(worktree_add_index + 1)
+        .find_map(|value| value.as_str()?.strip_prefix("cd "))
+        .unwrap_or(default_worktree_path)
+        .trim();
+    commands.insert(
+        worktree_add_index + 1,
+        toml::Value::String(copy_env_files_to_worktree_command(worktree_path)),
+    );
 }
 
 #[cfg(feature = "local_fs")]

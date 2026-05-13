@@ -810,7 +810,7 @@ fn test_build_worktree_toml_autogenerate_round_trips() {
     // Verify rendering produces the correct commands.
     let (_, template) = render_tab_config(&config, &HashMap::new(), Some("obsidian-hawk"));
     if let PaneTemplateType::PaneTemplate { commands, .. } = template {
-        assert_eq!(commands.len(), 2);
+        assert_eq!(commands.len(), 3);
         assert_eq!(
             commands[0].exec,
             format!(
@@ -820,6 +820,13 @@ fn test_build_worktree_toml_autogenerate_round_trips() {
         );
         assert_eq!(
             commands[1].exec,
+            copy_env_files_to_worktree_command(&generated_worktree_path_string(
+                "/Users/me/repo",
+                "obsidian-hawk"
+            ))
+        );
+        assert_eq!(
+            commands[2].exec,
             format!(
                 "cd {}",
                 generated_worktree_path_string("/Users/me/repo", "obsidian-hawk")
@@ -860,7 +867,7 @@ fn test_build_worktree_toml_manual_round_trips() {
     assert_eq!(title.as_deref(), Some("my-feature"));
 
     if let PaneTemplateType::PaneTemplate { commands, .. } = template {
-        assert_eq!(commands.len(), 2);
+        assert_eq!(commands.len(), 3);
         assert_eq!(
             commands[0].exec,
             format!(
@@ -870,6 +877,13 @@ fn test_build_worktree_toml_manual_round_trips() {
         );
         assert_eq!(
             commands[1].exec,
+            copy_env_files_to_worktree_command(&generated_worktree_path_string(
+                "/Users/me/repo",
+                "my-feature"
+            ))
+        );
+        assert_eq!(
+            commands[2].exec,
             format!(
                 "cd {}",
                 generated_worktree_path_string("/Users/me/repo", "my-feature")
