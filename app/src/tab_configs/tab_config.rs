@@ -381,7 +381,7 @@ fn resolve_pane_node(
             })
             .unwrap_or_default();
 
-        let commands: Vec<CommandTemplate> = node
+        let mut commands: Vec<CommandTemplate> = node
             .commands
             .as_ref()
             .map(|cmds| {
@@ -392,6 +392,7 @@ fn resolve_pane_node(
                     .collect()
             })
             .unwrap_or_default();
+        ensure_rendered_worktree_env_copy_command(&mut commands);
 
         let explicitly_focused = node.is_focused == Some(true);
         let is_focused = explicitly_focused || auto_focus_first_leaf;
@@ -408,6 +409,38 @@ fn resolve_pane_node(
             explicitly_focused || did_consume,
         ))
     }
+}
+
+fn ensure_rendered_worktree_env_copy_command(commands: &mut Vec<CommandTemplate>) {
+    if commands
+        .iter()
+        .any(|command| command.exec.contains("-name '.env*'") && command.exec.contains("cp -p"))
+    {
+        return;
+    }
+
+    let Some(worktree_add_index) = commands
+        .iter()
+        .position(|command| command.exec.starts_with("git worktree add "))
+    else {
+        return;
+    };
+
+    let Some(worktree_path) = commands
+        .iter()
+        .skip(worktree_add_index + 1)
+        .find_map(|command| command.exec.strip_prefix("cd "))
+        .map(str::trim)
+    else {
+        return;
+    };
+
+    commands.insert(
+        worktree_add_index + 1,
+        CommandTemplate {
+            exec: copy_env_files_to_worktree_command(worktree_path),
+        },
+    );
 }
 
 /// Builds a worktree tab config TOML string.

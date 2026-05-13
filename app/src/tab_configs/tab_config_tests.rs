@@ -732,7 +732,7 @@ fn test_worktree_template_substitution() {
     let (_, template) = render_tab_config(&config, &HashMap::new(), Some("mesa-coyote"));
 
     if let PaneTemplateType::PaneTemplate { commands, .. } = template {
-        assert_eq!(commands.len(), 2);
+        assert_eq!(commands.len(), 3);
         assert_eq!(
             commands[0].exec,
             format!(
@@ -742,6 +742,13 @@ fn test_worktree_template_substitution() {
         );
         assert_eq!(
             commands[1].exec,
+            copy_env_files_to_worktree_command(&generated_worktree_path_string(
+                "/Users/me/repo",
+                "mesa-coyote"
+            ))
+        );
+        assert_eq!(
+            commands[2].exec,
             format!(
                 "cd {}",
                 generated_worktree_path_string("/Users/me/repo", "mesa-coyote")
@@ -769,7 +776,7 @@ fn test_worktree_custom_commands_with_template() {
     let (_, template) = render_tab_config(&config, &HashMap::new(), Some("mesa-coyote"));
 
     if let PaneTemplateType::PaneTemplate { commands, .. } = template {
-        assert_eq!(commands.len(), 4);
+        assert_eq!(commands.len(), 5);
         assert_eq!(
             commands[0].exec,
             format!(
@@ -779,13 +786,20 @@ fn test_worktree_custom_commands_with_template() {
         );
         assert_eq!(
             commands[1].exec,
+            copy_env_files_to_worktree_command(&generated_worktree_path_string(
+                "/Users/me/repo",
+                "mesa-coyote"
+            ))
+        );
+        assert_eq!(
+            commands[2].exec,
             format!(
                 "cd {}",
                 generated_worktree_path_string("/Users/me/repo", "mesa-coyote")
             )
         );
-        assert_eq!(commands[2].exec, "gt branch create");
-        assert_eq!(commands[3].exec, "npm install");
+        assert_eq!(commands[3].exec, "gt branch create");
+        assert_eq!(commands[4].exec, "npm install");
     } else {
         panic!("Expected PaneTemplate");
     }
