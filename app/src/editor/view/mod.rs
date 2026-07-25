@@ -2261,7 +2261,7 @@ impl VimHandler for EditorView {
                                 );
 
                                 if *motion_type == MotionType::Linewise {
-                                    let include_newline = *operator != VimOperator::Change;
+                                    let include_newline = operator.includes_trailing_newline();
                                     editor_model.extend_selection_linewise(include_newline, ctx);
                                 }
                             }
@@ -2269,7 +2269,7 @@ impl VimHandler for EditorView {
                                 editor_model
                                     .move_to_buffer_end(/* keep_selection */ true, ctx);
                                 if *motion_type == MotionType::Linewise {
-                                    let include_newline = *operator != VimOperator::Change;
+                                    let include_newline = operator.includes_trailing_newline();
                                     editor_model.extend_selection_linewise(include_newline, ctx);
                                 }
                             }
@@ -2281,7 +2281,7 @@ impl VimHandler for EditorView {
                                 editor_model.change_selections(new_selections, ctx);
 
                                 if *motion_type == MotionType::Linewise {
-                                    let include_newline = *operator != VimOperator::Change;
+                                    let include_newline = operator.includes_trailing_newline();
                                     editor_model.extend_selection_linewise(include_newline, ctx);
                                 }
                             }
@@ -2294,14 +2294,14 @@ impl VimHandler for EditorView {
                                     ctx,
                                 );
                                 if *motion_type == MotionType::Linewise {
-                                    let include_newline = *operator != VimOperator::Change;
+                                    let include_newline = operator.includes_trailing_newline();
                                     editor_model.extend_selection_linewise(include_newline, ctx);
                                 }
                             }
                         }
                     }
                     VimOperand::Line => {
-                        let include_newline = *operator != VimOperator::Change;
+                        let include_newline = operator.includes_trailing_newline();
                         editor_model.extend_selection_below(operand_count.saturating_sub(1), ctx);
                         editor_model.extend_selection_linewise(include_newline, ctx);
                     }
@@ -2392,6 +2392,7 @@ impl VimHandler for EditorView {
             VimOperator::ToggleComment => {
                 // Commenting is not enabled for the EditorView.
             }
+            VimOperator::Indent | VimOperator::Dedent => {}
         }
     }
 
@@ -2673,7 +2674,7 @@ impl VimHandler for EditorView {
     ) {
         let selection_change =
             |editor_model: &mut EditorModel, ctx: &mut ModelContext<EditorModel>| {
-                let include_newline = *operator != VimOperator::Change;
+                let include_newline = operator.includes_trailing_newline();
                 editor_model.vim_visual_selection_range(motion_type, include_newline, ctx);
             };
         match operator {
@@ -2733,6 +2734,7 @@ impl VimHandler for EditorView {
             VimOperator::ToggleComment => {
                 // Commenting is not enabled for the EditorView.
             }
+            VimOperator::Indent | VimOperator::Dedent => {}
         }
     }
 
