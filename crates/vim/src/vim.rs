@@ -245,6 +245,8 @@ enum PendingAction {
     },
     /// the full "g" command
     G,
+    /// the full "z" command (e.g. zz)
+    Z,
     FindChar {
         direction: Direction,
         destination: FindCharDestination,
@@ -268,7 +270,16 @@ impl From<char> for PendingAction {
                 operator: VimOperator::Yank,
                 pending_operand: None,
             },
+            '>' => Self::Operation {
+                operator: VimOperator::Indent,
+                pending_operand: None,
+            },
+            '<' => Self::Operation {
+                operator: VimOperator::Dedent,
+                pending_operand: None,
+            },
             'g' => Self::G,
+            'z' => Self::Z,
             'f' => Self::FindChar {
                 direction: Direction::Forward,
                 destination: FindCharDestination::AtChar,
@@ -304,7 +315,7 @@ pub enum VimMotion {
     FindChar(FindCharMotion),
     JumpToFirstLine,
     JumpToLastLine,
-    /// Jump to a specific line number. See ":help G" in Vim.
+    /// Jump to a specific line number. See ":help gg" and ":help G" in Vim.
     JumpToLine(u32),
     /// See ":help %" in Vim.
     JumpToMatchingBracket,
@@ -586,6 +597,12 @@ pub enum VimEventType {
     GotoDefinition,
     FindReferences,
     ShowHover,
+    /// Center the current line vertically in the viewport. Triggered by `zz`.
+    CenterCursorVertically,
+    /// Move cursor and scroll viewport down by half a page. Triggered by `<C-d>`.
+    ScrollHalfPageDown,
+    /// Move cursor and scroll viewport up by half a page. Triggered by `<C-u>`.
+    ScrollHalfPageUp,
 }
 
 impl VimEventType {
@@ -603,7 +620,10 @@ impl VimEventType {
             | VimEventType::JoinLine
             | VimEventType::DeleteForward => Some(self.clone()),
             VimEventType::Operation { operator, .. }
-                if *operator == VimOperator::Change || *operator == VimOperator::Delete =>
+                if *operator == VimOperator::Change
+                    || *operator == VimOperator::Delete
+                    || *operator == VimOperator::Indent
+                    || *operator == VimOperator::Dedent =>
             {
                 Some(self.clone())
             }
@@ -643,7 +663,10 @@ impl VimEventType {
             | VimEventType::Escape
             | VimEventType::GotoDefinition
             | VimEventType::FindReferences
-            | VimEventType::ShowHover => None,
+            | VimEventType::ShowHover
+            | VimEventType::CenterCursorVertically
+            | VimEventType::ScrollHalfPageDown
+            | VimEventType::ScrollHalfPageUp => None,
         }
     }
 }
@@ -662,8 +685,15 @@ pub enum VimOperator {
     Uppercase,
     Lowercase,
     ToggleComment,
+    Indent,
+    Dedent,
 }
 
+impl VimOperator {
+    pub fn includes_trailing_newline(self) -> bool {
+        !matches!(self, Self::Change | Self::Indent | Self::Dedent)
+    }
+}
 impl From<char> for VimOperator {
     fn from(c: char) -> Self {
         match c {
@@ -673,6 +703,8 @@ impl From<char> for VimOperator {
             '~' => Self::ToggleCase,
             'u' => Self::Lowercase,
             'U' => Self::Uppercase,
+            '>' => Self::Indent,
+            '<' => Self::Dedent,
             _ => panic!("invalid char for VimOperator: {c}"),
         }
     }
@@ -794,6 +826,28 @@ impl VimFSA {
                 VimMode::Insert => self.handle_insert_mode_delete().into(),
                 VimMode::Normal | VimMode::Visual(_) => self.typed_character('x')?,
                 VimMode::Replace => self.change_mode(VimMode::Normal.into()).into(),
+            },
+            "ctrl-d" => match self.mode {
+                VimMode::Normal | VimMode::Visual(_) => {
+                    let count = self.get_action_count().unwrap_or(1);
+                    self.clear();
+                    VimEvent {
+                        event_type: VimEventType::ScrollHalfPageDown,
+                        count,
+                    }
+                }
+                _ => return None,
+            },
+            "ctrl-u" => match self.mode {
+                VimMode::Normal | VimMode::Visual(_) => {
+                    let count = self.get_action_count().unwrap_or(1);
+                    self.clear();
+                    VimEvent {
+                        event_type: VimEventType::ScrollHalfPageUp,
+                        count,
+                    }
+                }
+                _ => return None,
             },
             _ => return None,
         };
@@ -917,7 +971,11 @@ impl VimFSA {
                     },
                 ),
                 'r' => self.change_mode(VimMode::Replace.into()),
-                'g' | 'd' | 'c' | 'y' | 'f' | 'F' | 't' | 'T' | '[' | ']' | '"' => {
+                'g' | 'd' | 'c' | 'y' | 'z' | 'f' | 'F' | 't' | 'T' | '[' | ']' | '"' => {
+                    self.pending_action = Some(PendingAction::from(c));
+                    return None;
+                }
+                '<' | '>' => {
                     self.pending_action = Some(PendingAction::from(c));
                     return None;
                 }
@@ -1025,13 +1083,23 @@ impl VimFSA {
         action: PendingAction,
     ) -> Option<VimEventType> {
         let event = match action {
+            PendingAction::Z => match c {
+                'z' => VimEventType::CenterCursorVertically,
+                _ => {
+                    self.clear();
+                    return None;
+                }
+            },
             PendingAction::G => match c {
                 'e' | 'E' => VimEventType::Navigate(VimMotion::Word(WordMotion {
                     direction: Direction::Backward,
                     bound: WordBound::End,
                     word_type: WordType::from(c),
                 })),
-                'g' => VimEventType::Navigate(VimMotion::JumpToFirstLine),
+                'g' => match self.get_action_count() {
+                    Some(line_number) => VimEventType::Navigate(VimMotion::JumpToLine(line_number)),
+                    None => VimEventType::Navigate(VimMotion::JumpToFirstLine),
+                },
                 'd' => VimEventType::GotoDefinition,
                 'h' => VimEventType::ShowHover,
                 'r' => VimEventType::FindReferences,
@@ -1128,6 +1196,12 @@ impl VimFSA {
             }
             // Support gcc (toggle comment line)
             'c' if operator == VimOperator::ToggleComment => {
+                self.create_operation(operator, VimOperand::Line)
+            }
+            '>' if operator == VimOperator::Indent => {
+                self.create_operation(operator, VimOperand::Line)
+            }
+            '<' if operator == VimOperator::Dedent => {
                 self.create_operation(operator, VimOperand::Line)
             }
             'i' | 'a' | 'g' | 'f' | 'F' | 't' | 'T' | '[' | ']' => {
@@ -1289,7 +1363,10 @@ impl VimFSA {
                 'g' => self.create_operation(
                     operator,
                     VimOperand::Motion {
-                        motion: VimMotion::JumpToFirstLine,
+                        motion: match self.get_operand_count() {
+                            Some(line_number) => VimMotion::JumpToLine(line_number),
+                            None => VimMotion::JumpToFirstLine,
+                        },
                         motion_type: MotionType::Linewise,
                     },
                 ),
@@ -1449,6 +1526,11 @@ impl VimFSA {
                 self.mode = VimMode::Normal;
                 event_type
             }
+            '<' | '>' => {
+                let event_type = self.create_visual_operator(c, motion_type);
+                self.mode = VimMode::Normal;
+                event_type
+            }
             'c' | 'C' | 's' | 'S' => {
                 let event_type = self.create_visual_operator(c, motion_type);
                 self.mode = VimMode::Insert;
@@ -1467,7 +1549,7 @@ impl VimFSA {
                     write_register_name,
                 }
             }
-            'g' | 'f' | 'F' | 't' | 'T' | '[' | ']' | '"' => {
+            'g' | 'z' | 'f' | 'F' | 't' | 'T' | '[' | ']' | '"' => {
                 self.pending_action = Some(PendingAction::from(c));
                 return None;
             }
@@ -1502,13 +1584,23 @@ impl VimFSA {
         pending_action: PendingAction,
     ) -> Option<VimEventType> {
         let event_type = match pending_action {
+            PendingAction::Z => match c {
+                'z' => VimEventType::CenterCursorVertically,
+                _ => {
+                    self.clear();
+                    return None;
+                }
+            },
             PendingAction::G => match c {
                 'e' | 'E' => VimEventType::Navigate(VimMotion::Word(WordMotion {
                     direction: Direction::Backward,
                     bound: WordBound::End,
                     word_type: WordType::from(c),
                 })),
-                'g' => VimEventType::Navigate(VimMotion::JumpToFirstLine),
+                'g' => match self.get_action_count() {
+                    Some(line_number) => VimEventType::Navigate(VimMotion::JumpToLine(line_number)),
+                    None => VimEventType::Navigate(VimMotion::JumpToFirstLine),
+                },
                 'c' => {
                     let motion_type = match self.mode {
                         VimMode::Visual(mt) => mt,
@@ -1768,7 +1860,7 @@ impl VimModel {
     }
 
     pub fn keypress(&mut self, keystroke: &Keystroke, ctx: &mut ModelContext<Self>) {
-        if let Some(event) = self.fsa.keypress(keystroke.key.as_str()) {
+        if let Some(event) = self.fsa.keypress(keystroke.normalized().as_str()) {
             ctx.emit(event);
         }
     }
@@ -1885,6 +1977,9 @@ where
             VimEventType::GotoDefinition => self.goto_definition(ctx),
             VimEventType::FindReferences => self.find_references(ctx),
             VimEventType::ShowHover => self.show_hover(ctx),
+            VimEventType::CenterCursorVertically => self.center_cursor_vertically(ctx),
+            VimEventType::ScrollHalfPageDown => self.scroll_half_page_down(event.count, ctx),
+            VimEventType::ScrollHalfPageUp => self.scroll_half_page_up(event.count, ctx),
         };
     }
 }
@@ -2003,4 +2098,15 @@ pub trait VimHandler {
     fn find_references(&mut self, _ctx: &mut ViewContext<Self>) {}
     /// Show hover information for the symbol under cursor (gh).
     fn show_hover(&mut self, _ctx: &mut ViewContext<Self>) {}
+    /// Center the current line vertically in the viewport (zz).
+    fn center_cursor_vertically(&mut self, _ctx: &mut ViewContext<Self>) {}
+    /// Move the cursor down `count` half-pages and scroll the viewport (`<C-d>`).
+    fn scroll_half_page_down(&mut self, _count: u32, _ctx: &mut ViewContext<Self>) {}
+    /// Move the cursor up `count` half-pages and scroll the viewport (`<C-u>`).
+    fn scroll_half_page_up(&mut self, _count: u32, _ctx: &mut ViewContext<Self>) {}
 }
+
+#[cfg(test)]
+#[allow(non_snake_case)]
+#[path = "vim_tests.rs"]
+mod tests;

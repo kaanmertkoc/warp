@@ -354,7 +354,10 @@ pub struct FileTreeState {
     /// The entry representing the file tree structure.
     pub entry: FileTreeEntry,
     /// Gitignore rules applicable to this repository.
-    pub gitignores: Vec<Gitignore>,
+    ///
+    /// Behind an `Arc` so the per-watcher-event clone is an O(1) refcount bump
+    /// rather than a deep copy of every compiled regex program.
+    pub gitignores: Arc<Vec<Gitignore>>,
 
     /// Handle to the backing repository (None for lazily-loaded standalone paths).
     #[expect(unused)]
@@ -370,7 +373,7 @@ impl FileTreeState {
     ) -> Self {
         Self {
             entry: entry.into(),
-            gitignores,
+            gitignores: Arc::new(gitignores),
             repository,
         }
     }
@@ -379,7 +382,7 @@ impl FileTreeState {
     pub fn new_lazy_loaded(entry: Entry) -> Self {
         Self {
             entry: entry.into(),
-            gitignores: vec![],
+            gitignores: Arc::new(vec![]),
             repository: None,
         }
     }
@@ -391,7 +394,7 @@ impl FileTreeState {
     pub fn from_file_tree_entry(entry: FileTreeEntry) -> Self {
         Self {
             entry,
-            gitignores: vec![],
+            gitignores: Arc::new(vec![]),
             repository: None,
         }
     }

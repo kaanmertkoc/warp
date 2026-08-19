@@ -203,6 +203,10 @@ pub enum FeatureFlag {
     /// Maximizes data in flat storage to reduce memory usage.
     MaximizeFlatStorage,
 
+    /// Recognizes the OSC 8 hyperlink escape sequence and makes the
+    /// linked text Cmd+click-able.
+    OscHyperlinks,
+
     ImeMarkedText,
 
     /// Enables partial next command suggestions with a prefix.
@@ -925,6 +929,7 @@ pub const PREVIEW_FLAGS: &[FeatureFlag] = &[
     #[cfg(not(windows))]
     FeatureFlag::SshRemoteServer,
     FeatureFlag::GitOperationsInCodeReview,
+    FeatureFlag::OscHyperlinks,
 ];
 
 /// Features enabled for all release builds (i.e.: everything but WarpLocal).

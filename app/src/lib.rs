@@ -2348,6 +2348,8 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::RunGeneratorsWithCmdExe,
         #[cfg(feature = "ligatures")]
         FeatureFlag::Ligatures,
+        #[cfg(feature = "osc_hyperlinks")]
+        FeatureFlag::OscHyperlinks,
         #[cfg(feature = "selectable_prompt")]
         FeatureFlag::SelectablePrompt,
         #[cfg(feature = "viewing_shared_sessions")]
