@@ -21,6 +21,7 @@ else
 fi
 
 echo "Installing app to $DEST_APP"
+xattr -cr "$SOURCE_APP" || true
 if [[ -w "/Applications" ]]; then
   rm -rf "$DEST_APP"
   ditto "$SOURCE_APP" "$DEST_APP"
@@ -28,5 +29,6 @@ else
   sudo rm -rf "$DEST_APP"
   sudo ditto "$SOURCE_APP" "$DEST_APP"
 fi
+xattr -cr "$DEST_APP" || true
 
 echo "Installed: $DEST_APP"

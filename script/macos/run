@@ -176,7 +176,7 @@ fi
 install_dock_tile_plugin
 
 echo "Codesigning app..."
-SIGNING_CERT="$(security find-identity -p codesigning -v | grep "Apple Development" | awk '{print $2}' | head -1)"
+SIGNING_CERT="${KARP_CODESIGN_IDENTITY:--}"
 codesign --force --deep --options runtime --sign "${SIGNING_CERT:--}" "$WARP_APP_PATH" --entitlements script/Debug-Entitlements.plist
 
 if [ "$DONT_OPEN" = false ] ; then
