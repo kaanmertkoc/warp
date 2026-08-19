@@ -542,7 +542,9 @@ impl LocalRepoMetadataModel {
             return Err(RepoMetadataError::RepoNotFound(repo_root.to_string()));
         };
 
-        let mut gitignores = state.gitignores.clone();
+        // Tree building mutates the gitignore stack as it descends, so this needs an owned Vec.
+        // Only happens on explicit directory expansion, not the hot watcher path.
+        let mut gitignores = state.gitignores.as_ref().clone();
         state
             .entry
             .load_at_path(dir_path, &mut gitignores)

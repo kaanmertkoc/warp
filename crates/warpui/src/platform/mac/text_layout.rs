@@ -474,12 +474,16 @@ fn merge_adjacent_identical_runs(
     let mut merged: Vec<(Range<usize>, StyleAndFont)> = Vec::with_capacity(style_runs.len());
     merged.extend_from_slice(&style_runs[..first_mergeable]);
     for (range, style) in &style_runs[first_mergeable..] {
-        if let Some(last) = merged.last_mut()
-            && last.0.end == range.start
-            && last.1 == *style
-        {
-            last.0.end = range.end;
-        } else {
+        // NOTE: upstream uses a let-chain here; rewritten as a match because this
+        // crate is still on edition 2021, where let-chains are not available.
+        let merged_into_last = match merged.last_mut() {
+            Some(last) if last.0.end == range.start && last.1 == *style => {
+                last.0.end = range.end;
+                true
+            }
+            _ => false,
+        };
+        if !merged_into_last {
             merged.push((range.clone(), *style));
         }
     }
