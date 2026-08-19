@@ -873,7 +873,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::LazySceneBuilding,
     FeatureFlag::SshDragAndDrop,
     FeatureFlag::MultiWorkspace,
-    FeatureFlag::OscHyperlinks,
     FeatureFlag::ImeMarkedText,
     FeatureFlag::MSYS2Shells,
     FeatureFlag::RetryTruncatedCodeResponses,
@@ -930,6 +929,7 @@ pub const PREVIEW_FLAGS: &[FeatureFlag] = &[
     #[cfg(not(windows))]
     FeatureFlag::SshRemoteServer,
     FeatureFlag::GitOperationsInCodeReview,
+    FeatureFlag::OscHyperlinks,
 ];
 
 /// Features enabled for all release builds (i.e.: everything but WarpLocal).
