@@ -49,6 +49,22 @@ pub enum ThemeKind {
     ReceivedReferralReward,
     #[schemars(description = "Adeberry")]
     Adeberry,
+    #[schemars(description = "Vintage Dune")]
+    VintageDune,
+    #[schemars(description = "Sage Meadow")]
+    SageMeadow,
+    #[schemars(description = "Mint Halo")]
+    MintHalo,
+    #[schemars(description = "Spring Sorbet")]
+    SpringSorbet,
+    #[schemars(description = "Lavender Hush")]
+    LavenderHush,
+    #[schemars(description = "Peach Night")]
+    PeachNight,
+    #[schemars(description = "Bluebell Moon")]
+    BluebellMoon,
+    #[schemars(description = "Rose Milk")]
+    RoseMilk,
     #[schemars(description = "Phenomenon")]
     Phenomenon,
     #[schemars(description = "Deltarune")]
@@ -136,6 +152,14 @@ impl std::fmt::Display for ThemeKind {
             ThemeKind::Deltarune => "Deltarune",
             ThemeKind::SolarFlare => "Solar Flare",
             ThemeKind::Adeberry => "Adeberry",
+            ThemeKind::VintageDune => "Vintage Dune",
+            ThemeKind::SageMeadow => "Sage Meadow",
+            ThemeKind::MintHalo => "Mint Halo",
+            ThemeKind::SpringSorbet => "Spring Sorbet",
+            ThemeKind::LavenderHush => "Lavender Hush",
+            ThemeKind::PeachNight => "Peach Night",
+            ThemeKind::BluebellMoon => "Bluebell Moon",
+            ThemeKind::RoseMilk => "Rose Milk",
             ThemeKind::SentReferralReward => "Warp Referral",
             ThemeKind::ReceivedReferralReward => "Referred to Warp",
             ThemeKind::Custom(custom_theme) => custom_theme.name.as_str(),
@@ -325,6 +349,14 @@ impl WarpThemeConfig {
             (ThemeKind::Deltarune, deltarune()),
             (ThemeKind::SolarFlare, solar_flare()),
             (ThemeKind::Adeberry, adeberry()),
+            (ThemeKind::VintageDune, vintage_dune()),
+            (ThemeKind::SageMeadow, sage_meadow()),
+            (ThemeKind::MintHalo, mint_halo()),
+            (ThemeKind::SpringSorbet, spring_sorbet()),
+            (ThemeKind::LavenderHush, lavender_hush()),
+            (ThemeKind::PeachNight, peach_night()),
+            (ThemeKind::BluebellMoon, bluebell_moon()),
+            (ThemeKind::RoseMilk, rose_milk()),
         ]);
         WarpThemeConfig { theme_map }
     }

@@ -218,6 +218,174 @@ const ADEBERRY_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
     AnsiColor::from_u32(0xFFFFFFFF),
 );
 
+const VINTAGE_DUNE_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x1B1A24FF),
+    AnsiColor::from_u32(0xD9907AFF),
+    AnsiColor::from_u32(0xAFCB8AFF),
+    AnsiColor::from_u32(0xDAA464FF),
+    AnsiColor::from_u32(0x9EA8D4FF),
+    AnsiColor::from_u32(0xD7A2C8FF),
+    AnsiColor::from_u32(0x8CC7C9FF),
+    AnsiColor::from_u32(0xE8DDB4FF),
+);
+const VINTAGE_DUNE_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x4A465BFF),
+    AnsiColor::from_u32(0xF0A58DFF),
+    AnsiColor::from_u32(0xC4DFA3FF),
+    AnsiColor::from_u32(0xDEC384FF),
+    AnsiColor::from_u32(0xB8C1EAFF),
+    AnsiColor::from_u32(0xE9B8DCFF),
+    AnsiColor::from_u32(0xA6DDE0FF),
+    AnsiColor::from_u32(0xFFF8DCFF),
+);
+
+const SAGE_MEADOW_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x16251FFF),
+    AnsiColor::from_u32(0xE09A8BFF),
+    AnsiColor::from_u32(0x88BDA4FF),
+    AnsiColor::from_u32(0xD8C48CFF),
+    AnsiColor::from_u32(0x9BC7D3FF),
+    AnsiColor::from_u32(0xC49AC9FF),
+    AnsiColor::from_u32(0xB1D3B9FF),
+    AnsiColor::from_u32(0xE6F2DDFF),
+);
+const SAGE_MEADOW_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x415A51FF),
+    AnsiColor::from_u32(0xF2B1A4FF),
+    AnsiColor::from_u32(0xA4D4BCFF),
+    AnsiColor::from_u32(0xE6D5A7FF),
+    AnsiColor::from_u32(0xB5DEEAFF),
+    AnsiColor::from_u32(0xDEB8E3FF),
+    AnsiColor::from_u32(0xC9E7CFFF),
+    AnsiColor::from_u32(0xF8FFF2FF),
+);
+
+const MINT_HALO_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x171A35FF),
+    AnsiColor::from_u32(0xF0A1B7FF),
+    AnsiColor::from_u32(0xA3E7C1FF),
+    AnsiColor::from_u32(0xE7D98FFF),
+    AnsiColor::from_u32(0xAEE2FFFF),
+    AnsiColor::from_u32(0xB5BAFFFF),
+    AnsiColor::from_u32(0x9BE6EAFF),
+    AnsiColor::from_u32(0xD9F9DFFF),
+);
+const MINT_HALO_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x454B75FF),
+    AnsiColor::from_u32(0xFFC0D0FF),
+    AnsiColor::from_u32(0xC2F6D5FF),
+    AnsiColor::from_u32(0xF4E9ADFF),
+    AnsiColor::from_u32(0xC9EEFFFF),
+    AnsiColor::from_u32(0xD1D4FFFF),
+    AnsiColor::from_u32(0xB8F7FAFF),
+    AnsiColor::from_u32(0xF0FFF2FF),
+);
+
+const SPRING_SORBET_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x172B32FF),
+    AnsiColor::from_u32(0xF9B2D7FF),
+    AnsiColor::from_u32(0xB8F2C1FF),
+    AnsiColor::from_u32(0xEAF0A6FF),
+    AnsiColor::from_u32(0xCFECF3FF),
+    AnsiColor::from_u32(0xE8A6D0FF),
+    AnsiColor::from_u32(0xA8DDE6FF),
+    AnsiColor::from_u32(0xF6FFDCFF),
+);
+const SPRING_SORBET_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x46606AFF),
+    AnsiColor::from_u32(0xFFC7E3FF),
+    AnsiColor::from_u32(0xD6F9DEFF),
+    AnsiColor::from_u32(0xF6FFDCFF),
+    AnsiColor::from_u32(0xE3F6FAFF),
+    AnsiColor::from_u32(0xFFC3E4FF),
+    AnsiColor::from_u32(0xD6F7FFFF),
+    AnsiColor::from_u32(0xFEFFF4FF),
+);
+
+const LAVENDER_HUSH_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x211D32FF),
+    AnsiColor::from_u32(0xE8A0A8FF),
+    AnsiColor::from_u32(0xB7D4B1FF),
+    AnsiColor::from_u32(0xE4D49AFF),
+    AnsiColor::from_u32(0xB4D3D9FF),
+    AnsiColor::from_u32(0xBDA6CEFF),
+    AnsiColor::from_u32(0xA7DAD8FF),
+    AnsiColor::from_u32(0xF2EAE0FF),
+);
+const LAVENDER_HUSH_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x514A69FF),
+    AnsiColor::from_u32(0xF2B8BFFF),
+    AnsiColor::from_u32(0xCAE6C5FF),
+    AnsiColor::from_u32(0xF0E2B1FF),
+    AnsiColor::from_u32(0xC9E7ECFF),
+    AnsiColor::from_u32(0xD6C0E6FF),
+    AnsiColor::from_u32(0xBEF0EEFF),
+    AnsiColor::from_u32(0xFFF8EEFF),
+);
+
+const PEACH_NIGHT_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x2C2024FF),
+    AnsiColor::from_u32(0xFF9A86FF),
+    AnsiColor::from_u32(0xB9D8A2FF),
+    AnsiColor::from_u32(0xFFD6A6FF),
+    AnsiColor::from_u32(0xA8CFE8FF),
+    AnsiColor::from_u32(0xFFB399FF),
+    AnsiColor::from_u32(0xB7E1D6FF),
+    AnsiColor::from_u32(0xFFF0BEFF),
+);
+const PEACH_NIGHT_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x5E4B50FF),
+    AnsiColor::from_u32(0xFFB2A4FF),
+    AnsiColor::from_u32(0xD0EDBCFF),
+    AnsiColor::from_u32(0xFFE3C2FF),
+    AnsiColor::from_u32(0xC4E5FAFF),
+    AnsiColor::from_u32(0xFFC8B6FF),
+    AnsiColor::from_u32(0xD0F0E8FF),
+    AnsiColor::from_u32(0xFFF8D9FF),
+);
+
+const BLUEBELL_MOON_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x182231FF),
+    AnsiColor::from_u32(0xE99DA2FF),
+    AnsiColor::from_u32(0xB7D7B3FF),
+    AnsiColor::from_u32(0xE8D5A5FF),
+    AnsiColor::from_u32(0x81A6C6FF),
+    AnsiColor::from_u32(0xC0A9CEFF),
+    AnsiColor::from_u32(0xAACDDCFF),
+    AnsiColor::from_u32(0xF3E3D0FF),
+);
+const BLUEBELL_MOON_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x465466FF),
+    AnsiColor::from_u32(0xF2B8BCFF),
+    AnsiColor::from_u32(0xD0EBD0FF),
+    AnsiColor::from_u32(0xF2E1BEFF),
+    AnsiColor::from_u32(0x9FC2E1FF),
+    AnsiColor::from_u32(0xD9C1E6FF),
+    AnsiColor::from_u32(0xC4E4F0FF),
+    AnsiColor::from_u32(0xFFF2E1FF),
+);
+
+const ROSE_MILK_NORMAL_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x2B2029FF),
+    AnsiColor::from_u32(0xF5AFAFFF),
+    AnsiColor::from_u32(0xBFD7B4FF),
+    AnsiColor::from_u32(0xEAD8A6FF),
+    AnsiColor::from_u32(0xB7D4E8FF),
+    AnsiColor::from_u32(0xF9DFDFFF),
+    AnsiColor::from_u32(0xD2E6D6FF),
+    AnsiColor::from_u32(0xFBEFEFFF),
+);
+const ROSE_MILK_BRIGHT_COLORS: AnsiColors = AnsiColors::new(
+    AnsiColor::from_u32(0x5B4A58FF),
+    AnsiColor::from_u32(0xFFC7C7FF),
+    AnsiColor::from_u32(0xD9EFCFFF),
+    AnsiColor::from_u32(0xF6E6BEFF),
+    AnsiColor::from_u32(0xCEE8FAFF),
+    AnsiColor::from_u32(0xFFE9E9FF),
+    AnsiColor::from_u32(0xE6F4E8FF),
+    AnsiColor::from_u32(0xFCF8F8FF),
+);
+
 pub(super) fn light_mode_colors() -> TerminalColors {
     TerminalColors::new(LIGHT_MODE_NORMAL_COLORS, LIGHT_MODE_BRIGHT_COLORS)
 }
@@ -256,6 +424,38 @@ pub(super) fn solarflare_colors() -> TerminalColors {
 
 pub(super) fn adeberry_colors() -> TerminalColors {
     TerminalColors::new(ADEBERRY_NORMAL_COLORS, ADEBERRY_BRIGHT_COLORS)
+}
+
+pub(super) fn vintage_dune_colors() -> TerminalColors {
+    TerminalColors::new(VINTAGE_DUNE_NORMAL_COLORS, VINTAGE_DUNE_BRIGHT_COLORS)
+}
+
+pub(super) fn sage_meadow_colors() -> TerminalColors {
+    TerminalColors::new(SAGE_MEADOW_NORMAL_COLORS, SAGE_MEADOW_BRIGHT_COLORS)
+}
+
+pub(super) fn mint_halo_colors() -> TerminalColors {
+    TerminalColors::new(MINT_HALO_NORMAL_COLORS, MINT_HALO_BRIGHT_COLORS)
+}
+
+pub(super) fn spring_sorbet_colors() -> TerminalColors {
+    TerminalColors::new(SPRING_SORBET_NORMAL_COLORS, SPRING_SORBET_BRIGHT_COLORS)
+}
+
+pub(super) fn lavender_hush_colors() -> TerminalColors {
+    TerminalColors::new(LAVENDER_HUSH_NORMAL_COLORS, LAVENDER_HUSH_BRIGHT_COLORS)
+}
+
+pub(super) fn peach_night_colors() -> TerminalColors {
+    TerminalColors::new(PEACH_NIGHT_NORMAL_COLORS, PEACH_NIGHT_BRIGHT_COLORS)
+}
+
+pub(super) fn bluebell_moon_colors() -> TerminalColors {
+    TerminalColors::new(BLUEBELL_MOON_NORMAL_COLORS, BLUEBELL_MOON_BRIGHT_COLORS)
+}
+
+pub(super) fn rose_milk_colors() -> TerminalColors {
+    TerminalColors::new(ROSE_MILK_NORMAL_COLORS, ROSE_MILK_BRIGHT_COLORS)
 }
 
 /// Default bundled themes
@@ -611,6 +811,110 @@ pub(super) fn adeberry() -> WarpTheme {
         adeberry_colors(),
         None,
         Some("Adeberry".to_string()),
+    )
+}
+
+pub(super) fn vintage_dune() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x1B1A24FF)),
+        ColorU::from_u32(0xF3EAC8FF),
+        Fill::Solid(ColorU::from_u32(0x767F9EFF)),
+        None,
+        Some(Details::Darker),
+        vintage_dune_colors(),
+        None,
+        Some("Vintage Dune".to_string()),
+    )
+}
+
+pub(super) fn sage_meadow() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x16251FFF)),
+        ColorU::from_u32(0xE6F2DDFF),
+        Fill::Solid(ColorU::from_u32(0x88BDA4FF)),
+        None,
+        Some(Details::Darker),
+        sage_meadow_colors(),
+        None,
+        Some("Sage Meadow".to_string()),
+    )
+}
+
+pub(super) fn mint_halo() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x171A35FF)),
+        ColorU::from_u32(0xD9F9DFFF),
+        Fill::Solid(ColorU::from_u32(0x9FA1FFFF)),
+        None,
+        Some(Details::Darker),
+        mint_halo_colors(),
+        None,
+        Some("Mint Halo".to_string()),
+    )
+}
+
+pub(super) fn spring_sorbet() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x172B32FF)),
+        ColorU::from_u32(0xF6FFDCFF),
+        Fill::Solid(ColorU::from_u32(0xF9B2D7FF)),
+        None,
+        Some(Details::Darker),
+        spring_sorbet_colors(),
+        None,
+        Some("Spring Sorbet".to_string()),
+    )
+}
+
+pub(super) fn lavender_hush() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x211D32FF)),
+        ColorU::from_u32(0xF2EAE0FF),
+        Fill::Solid(ColorU::from_u32(0xBDA6CEFF)),
+        None,
+        Some(Details::Darker),
+        lavender_hush_colors(),
+        None,
+        Some("Lavender Hush".to_string()),
+    )
+}
+
+pub(super) fn peach_night() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x2C2024FF)),
+        ColorU::from_u32(0xFFF0BEFF),
+        Fill::Solid(ColorU::from_u32(0xFF9A86FF)),
+        None,
+        Some(Details::Darker),
+        peach_night_colors(),
+        None,
+        Some("Peach Night".to_string()),
+    )
+}
+
+pub(super) fn bluebell_moon() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x182231FF)),
+        ColorU::from_u32(0xF3E3D0FF),
+        Fill::Solid(ColorU::from_u32(0x81A6C6FF)),
+        None,
+        Some(Details::Darker),
+        bluebell_moon_colors(),
+        None,
+        Some("Bluebell Moon".to_string()),
+    )
+}
+
+pub(super) fn rose_milk() -> WarpTheme {
+    WarpTheme::new(
+        Fill::Solid(ColorU::from_u32(0x2B2029FF)),
+        ColorU::from_u32(0xFBEFEFFF),
+        Fill::Solid(ColorU::from_u32(0xF5AFAFFF)),
+        None,
+        Some(Details::Darker),
+        rose_milk_colors(),
+        None,
+        Some("Rose Milk".to_string()),
     )
 }
 
