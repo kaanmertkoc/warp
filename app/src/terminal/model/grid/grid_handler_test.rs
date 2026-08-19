@@ -2122,8 +2122,7 @@ fn content_len_equals_len_when_no_trailing_blanks() {
     assert_eq!(grid.content_len(), expected);
 }
 
-// ─── FullGridClearBehavior::Clear resize + scroll desync ─────────────
-#[test]#[test]#[test]#[test]fn input_hyperlinked(grid: &mut GridHandler, uri: &str, text: &str) {
+fn input_hyperlinked(grid: &mut GridHandler, uri: &str, text: &str) {
     grid.set_hyperlink(Some(warp_terminal::model::ansi::Hyperlink {
         id: None,
         uri: uri.to_owned(),
@@ -2133,7 +2132,8 @@ fn content_len_equals_len_when_no_trailing_blanks() {
     }
     grid.set_hyperlink(None);
 }
-#[test]fn test_hyperlink_at_point_spans_contiguous_cells() {
+#[test]
+fn test_hyperlink_at_point_spans_contiguous_cells() {
     let _flag = crate::features::FeatureFlag::OscHyperlinks.override_enabled(true);
     let mut grid = GridHandler::new_for_test(5, 20);
 
@@ -2173,7 +2173,8 @@ fn content_len_equals_len_when_no_trailing_blanks() {
     );
     assert_eq!(grid.hyperlink_uri_at_point(Point::new(0, 0)), None);
 }
-#[test]fn test_adjacent_hyperlinks_with_different_uris_do_not_merge() {
+#[test]
+fn test_adjacent_hyperlinks_with_different_uris_do_not_merge() {
     let _flag = crate::features::FeatureFlag::OscHyperlinks.override_enabled(true);
     let mut grid = GridHandler::new_for_test(5, 20);
 
@@ -2205,7 +2206,8 @@ fn content_len_equals_len_when_no_trailing_blanks() {
         Some("https://b.com")
     );
 }
-#[test]fn test_hyperlink_at_point_short_circuits_when_flag_disabled() {
+#[test]
+fn test_hyperlink_at_point_short_circuits_when_flag_disabled() {
     let _flag = crate::features::FeatureFlag::OscHyperlinks.override_enabled(false);
     let mut grid = GridHandler::new_for_test(5, 20);
 
@@ -2215,4 +2217,3 @@ fn content_len_equals_len_when_no_trailing_blanks() {
     assert_eq!(grid.hyperlink_at_point(Point::new(0, 0)), None);
     assert_eq!(grid.hyperlink_uri_at_point(Point::new(0, 0)), None);
 }
-#[test]

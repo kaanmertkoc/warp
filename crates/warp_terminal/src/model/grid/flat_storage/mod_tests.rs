@@ -254,7 +254,8 @@ fn test_clear_after_truncate_front() {
         '2'
     );
 }
-#[test]#[test]fn test_wide_char_hyperlink_spacer_survives_roundtrip() {
+#[test]
+fn test_wide_char_hyperlink_spacer_survives_roundtrip() {
     use crate::model::ansi::control_sequence_parameters::Hyperlink;
     use crate::model::grid::HyperlinkRegistry;
 
@@ -292,7 +293,8 @@ fn test_clear_after_truncate_front() {
     assert!(flat[1].flags().contains(Flags::WIDE_CHAR_SPACER));
     assert_eq!(flat[1].hyperlink_id(), Some(id));
 }
-#[test]fn test_blank_cells_before_hyperlink_are_not_clickable() {
+#[test]
+fn test_blank_cells_before_hyperlink_are_not_clickable() {
     use crate::model::ansi::control_sequence_parameters::Hyperlink;
     use crate::model::grid::HyperlinkRegistry;
 
