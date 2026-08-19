@@ -381,6 +381,15 @@ impl TelemetryApi {
         mut msg: RudderMessage,
         rudder_stack_destination: RudderStackDestination,
     ) -> Result<()> {
+        if rudder_stack_destination.root_url.is_empty()
+            || rudder_stack_destination.write_key.is_empty()
+        {
+            log::debug!(
+                "Dropping telemetry event because no RudderStack destination is configured"
+            );
+            return Ok(());
+        }
+
         msg.attach_context();
 
         let path = match msg {
